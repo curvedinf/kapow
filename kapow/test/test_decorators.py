@@ -3,13 +3,12 @@ import math
 import pytest
 from kapow import mf
 
-def optimal_sqrt(input=float):
+def optimal_sqrt(input=1.0):
     return math.sqrt(input)
 
 @mf(optimal_sqrt)
-def approximate_sqrt(input=float):
-    # This function is a stub for metafunction optimization, its logic is irrelevant here
-    return float(input)**0.5
+def approximate_sqrt(input=1.0):
+    return 1.0
 
 def test_approximate_sqrt():
     # Loop through 1000 iterations with random integers
