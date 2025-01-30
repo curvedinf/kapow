@@ -1,1 +1,2 @@
-from .decorators import mf as mf
+from .decorators import metafunction
+from .decorators import metafunction as mf

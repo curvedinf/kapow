@@ -13,44 +13,47 @@ def get_deep_type(obj):
         return {get_deep_type(item) for item in obj}
     else:
         return type(obj)
-
+    
 def get_default_types(func):
     sig = inspect.signature(func)
     return {
         param.name: type(param.default) for param in sig.parameters.values() if param.default is not param.empty
     }
 
-def mf(optimizer_function):
+def wrap_in_tuple(item):
+    """Ensure that the output is always encapsulated in a tuple at the root level."""
+    if not isinstance(item, tuple):
+        return (item,)
+    return item
+
+def metafunction(optimizer_function, mf_def=nn_metafunction):
     if not optimizer_function:
         raise ValueError("An optimizer function must be passed to the mf decorator.")
     
     def decorator(func):
         # Pre-calculate types during the decoration step
-        func_default_types = get_default_types(func)
-        optimizer_default_types = get_default_types(optimizer_function)
-
-        print(f"Function default argument types: {func_default_types}")
-        print(f"Optimizer default argument types: {optimizer_default_types}")
-
+        function_output_signature = get_default_types(func)
+        optimizer_output_signature = get_default_types(optimizer_function)
+        print(f"Function default argument types: {function_output_signature}")
+        print(f"Optimizer default argument types: {optimizer_output_signature}")
         try:
             dummy_args = (None,) * len(inspect.signature(func).parameters)
             dummy_kwargs = {k: None for k in inspect.signature(func).parameters.keys()}
-            # Capture types by running the functions
-            func_output_types = get_deep_type(func(*dummy_args, **dummy_kwargs))
-            optimizer_output_types = get_deep_type(optimizer_function(*dummy_args, **dummy_kwargs))
-            print(f"Function output types: {func_output_types}")
-            print(f"Optimizer output types: {optimizer_output_types}")
+            # Capture types by running the functions and encapsulate outputs in a tuple
+            function_signature = wrap_in_tuple(get_deep_type(func(*dummy_args, **dummy_kwargs)))
+            optimizer_signature = wrap_in_tuple(get_deep_type(optimizer_function(*dummy_args, **dummy_kwargs)))
+            print(f"Function output types: {function_signature}")
+            print(f"Optimizer output types: {optimizer_signature}")
         except Exception as e:
             print(f"Error running function for introspection: {e}")
-            func_output_types = optimizer_output_types = None
-
+            function_signature = optimizer_signature = None
+            
         def wrapper(*args, **kwargs):
-            # Pass the pre-calculated types to the nn_metafunction
-            output = nn_metafunction(*args, **kwargs, func_types=func_output_types, 
-                                     optimizer_types=optimizer_output_types,
-                                     func_default_types=func_default_types, 
-                                     optimizer_default_types=optimizer_default_types)
-            output_types = get_deep_type(output)
+            output = mf_def(*args, **kwargs, function_signature=function_signature,
+                                     optimizer_signature=optimizer_signature,
+                                     function_output_signature=function_output_signature,
+                                     optimizer_output_signature=optimizer_output_signature)
+            output_types = wrap_in_tuple(get_deep_type(output))
             
             # Optionally, output the types (for debugging purposes)
             print(f"Output types: {output_types}")

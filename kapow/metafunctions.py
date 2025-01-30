@@ -1,19 +1,22 @@
-def nn_metafunction(*args, **kwargs):
-    # Retrieve introspection arguments from kwargs
-    func_types = kwargs.get('func_types', None)
-    optimizer_types = kwargs.get('optimizer_types', None)
-    func_default_types = kwargs.get('func_default_types', None)
-    optimizer_default_types = kwargs.get('optimizer_default_types', None)
+def nn_metafunction(
+        *args,
+        function_signature=None,
+        optimizer_signature=None,
+        function_output_signature=None,
+        optimizer_output_signature=None,
+        **kwargs,
+):
     
     # Debugging output to see what introspection revealed
-    print(f"Func Types: {func_types}")
-    print(f"Optimizer Types: {optimizer_types}")
-    print(f"Func Default Types: {func_default_types}")
-    print(f"Optimizer Default Types: {optimizer_default_types}")
+    print(f"function_signature: {function_signature}")
+    print(f"optimizer_signature: {optimizer_signature}")
+    print(f"function_output_signature: {function_output_signature}")
+    print(f"optimizer_output_signature: {optimizer_output_signature}")
 
-    # Implement default behavior, just return a type placeholder
-    class DefaultTypePlaceholder:
-        def __repr__(self):
-            return "<DefaultTypePlaceholder>"
+    # For each function output signature collection item, produce a value of the type in an identically
+    # shaped collection
 
-    return DefaultTypePlaceholder()
+    temp_output = function_output_signature()
+    print(f"Temp output: {temp_output}")
+
+    return temp_output
