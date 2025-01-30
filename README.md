@@ -3,9 +3,9 @@ Python metafunctions
 
 ## What is a metafunction?
 
-A normal function has defined inputs, defined outputs, and deterministic results
-for its output. On the other hand, a metafunction is a type of function which has
-undefined input and undefined non-deterministic output. Where functions
+A normal function has defined input types, defined output types, and deterministic 
+results for its output. On the other hand, a metafunction is a type of function which 
+has undefined input and undefined non-deterministic output. Where functions
 give known outputs, metafunctions are designed to self optimize over time
 and make no assumptions about the scope of their inputs or outputs.
 
