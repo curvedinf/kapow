@@ -1,0 +1,2 @@
+# kapow
+Generic python metafunctions
