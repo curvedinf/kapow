@@ -13,10 +13,8 @@ def nn_metafunction(
     print(f"function_output_signature: {function_output_signature}")
     print(f"optimizer_output_signature: {optimizer_output_signature}")
 
-    # For each function output signature collection item, produce a value of the type in an identically
-    # shaped collection
-
-    temp_output = function_output_signature()
+    # Produce a tuple of default values based on the output signature types
+    temp_output = tuple(typ() for typ in function_output_signature.values())
     print(f"Temp output: {temp_output}")
-
+    
     return temp_output
