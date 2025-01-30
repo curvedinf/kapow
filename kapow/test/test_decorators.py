@@ -1,6 +1,5 @@
 import random
 import math
-import pytest
 from kapow import mf
 
 def optimal_sqrt(input=1.0):
