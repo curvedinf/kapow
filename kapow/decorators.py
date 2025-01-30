@@ -4,29 +4,48 @@ def metafunction_definition(*args, **kwargs):
     # Stubbed function to replace decorated functions
     pass
 
+def get_deep_type(obj):
+    """
+    Recursively determine the type of the object, handling nested lists, dicts, and sets.
+    """
+    if isinstance(obj, list):
+        return [get_deep_type(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: get_deep_type(value) for key, value in obj.items()}
+    elif isinstance(obj, set):
+        return {get_deep_type(item) for item in obj}
+    else:
+        return type(obj)
+
 def mf(optimal_function):
     if not optimal_function:
         raise ValueError("An optimizer function must be passed to the mf decorator.")
-
-    # Introspect the optimizer function
-    optimizer_signature = inspect.signature(optimal_function)
-    optimizer_input_types = {param.name: param.annotation for param in optimizer_signature.parameters.values() if param.annotation is not param.empty}
-    optimizer_output_types = optimizer_signature.return_annotation if optimizer_signature.return_annotation is not inspect.Signature.empty else None
-
+    
     def decorator(func):
-        # Introspect the decorated function
-        signature = inspect.signature(func)
-        input_types = {param.name: param.annotation for param in signature.parameters.values() if param.annotation is not param.empty}
-        output_types = signature.return_annotation if signature.return_annotation is not inspect.Signature.empty else None
-
         def wrapper(*args, **kwargs):
-            return metafunction_definition(*args, **kwargs)
+            output = metafunction_definition(*args, **kwargs)
+            output_types = get_deep_type(output)
+            
+            # Optionally, output the types (for debugging purposes)
+            print(f"Output types: {output_types}")
+            
+            return output
         
-        # Optionally, output the types (for debugging purposes)
-        print(f"Optimizer Input types: {optimizer_input_types}")
-        print(f"Optimizer Output types: {optimizer_output_types}")
-        print(f"Input types: {input_types}")
-        print(f"Output types: {output_types}")
-        
+        # Run both functions with dummy parameters to infer input/output types
+        try:
+            dummy_args = (None,) * len(inspect.signature(func).parameters)
+            dummy_kwargs = {k: None for k in inspect.signature(func).parameters.keys()}
+
+            # Capture types by running the functions
+            func_output_types = get_deep_type(func(*dummy_args, **dummy_kwargs))
+            optimizer_output_types = get_deep_type(optimal_function(*dummy_args, **dummy_kwargs))
+
+            print(f"Function Output types: {func_output_types}")
+            print(f"Optimizer Output types: {optimizer_output_types}")
+
+        except Exception as e:
+            print(f"Error running function stubs for introspection: {e}")
+
         return wrapper
+    
     return decorator
