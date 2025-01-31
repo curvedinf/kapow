@@ -2,7 +2,7 @@ from litellm import completion
 
 def call_llm(prompt):
     response = completion(
-        input=prompt,
-        model='gemini-flash'
+        model='gemini/gemini-1.5-flash-latest',
+        messages = [{"content": prompt, "role": "user"}]
     )
-    return response['data'][0]['text']
+    return response['choices'][0]['message']['content']

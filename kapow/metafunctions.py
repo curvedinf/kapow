@@ -56,10 +56,7 @@ def nn_metafunction(
     print(f"Arg JSON: {arg_json}")
 
     # Generate embedding from litellm
-    embedding_vector = embedding(
-        input=[f"JSON representation of a function call:\n\n{arg_json}"],
-        model='voyage/voyage-3-lite'
-    )['data'][0]['embedding']
+    embedding_vector = embed(f"JSON representation of a function call:\n\n{arg_json}")
     input_size = len(embedding_vector)
     print(f"Embedding vector length: {input_size}")  # Debug statement
     print(f"Embedding vector sample: {embedding_vector[:10]}")  # Show first 10 values
