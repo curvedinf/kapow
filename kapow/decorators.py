@@ -50,6 +50,7 @@ def metafunction(optimizer_function, mf_def=nn_metafunction):
             
         def wrapper(*args, **kwargs):
             func_name = func.__name__
+            print(f"Function kwargs: {kwargs}")
             output = mf_def(
                 *args,
                 **kwargs,
