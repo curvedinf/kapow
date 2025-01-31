@@ -36,23 +36,31 @@ def metafunction(optimizer_function, mf_def=nn_metafunction):
         optimizer_output_signature = get_default_types(optimizer_function)
         print(f"Function default argument types: {function_output_signature}")
         print(f"Optimizer default argument types: {optimizer_output_signature}")
-        try:
-            dummy_args = (None,) * len(inspect.signature(func).parameters)
-            dummy_kwargs = {k: None for k in inspect.signature(func).parameters.keys()}
-            # Capture types by running the functions and encapsulate outputs in a tuple
-            function_signature = wrap_in_tuple(get_deep_type(func(*dummy_args, **dummy_kwargs)))
-            optimizer_signature = wrap_in_tuple(get_deep_type(optimizer_function(*dummy_args, **dummy_kwargs)))
-            print(f"Function output types: {function_signature}")
-            print(f"Optimizer output types: {optimizer_signature}")
-        except Exception as e:
-            print(f"Error running function for introspection: {e}")
-            function_signature = optimizer_signature = None
+
+        # Capture types by running the functions and encapsulate outputs in a tuple
+        function_signature = wrap_in_tuple(get_deep_type(func()))
+        function_arg_names = [
+            param.name
+            for param in inspect.signature(func).parameters.values()
+            if param.kind == inspect.Parameter.VAR_KEYWORD
+        ]
+        optimizer_signature = wrap_in_tuple(get_deep_type(optimizer_function()))
+        print(f"Function output types: {function_signature}")
+        print(f"Optimizer output types: {optimizer_signature}")
             
         def wrapper(*args, **kwargs):
-            output = mf_def(*args, **kwargs, function_signature=function_signature,
-                                     optimizer_signature=optimizer_signature,
-                                     function_output_signature=function_output_signature,
-                                     optimizer_output_signature=optimizer_output_signature)
+            func_name = func.__name__
+            output = mf_def(
+                *args,
+                **kwargs,
+                _kapow_function_name=func_name,
+                _kapow_optimizer_function=optimizer_function,
+                _kapow_function_arg_names=function_arg_names,
+                _kapow_function_signature=function_signature,
+                _kapow_optimizer_signature=optimizer_signature,
+                _kapow_function_output_signature=function_output_signature,
+                _kapow_optimizer_output_signature=optimizer_output_signature
+            )
             output_types = wrap_in_tuple(get_deep_type(output))
             
             # Optionally, output the types (for debugging purposes)

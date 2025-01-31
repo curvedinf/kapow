@@ -50,7 +50,7 @@ backwards galaxy Andromeda, the spacecraft comes across a planet that has
 the signals of life, and as its imperrative is to seek out new life, it
 must confirm the life signs.
 
-In doing so it must decend into the atmosphere of the the planet, where
+In doing so it must decend into the atmosphere of tthe planet, where
 it has determined all of its sensors will no longer function, and none of
 its existing sources of motivation will work. To this end, it designs and
 constructs new specialized sensors and motivators.
@@ -83,8 +83,8 @@ import math
 
 from kapow import mf
 
-def optimal_sqrt(input=float)
-	return math.sqrt(i)
+def optimal_sqrt(input=float):
+    return math.sqrt(input)
 
 @mf(optimal_sqrt)
 def approximate_sqrt(input=float):
@@ -92,10 +92,10 @@ def approximate_sqrt(input=float):
 
 for _ in range(1000):
     random_int = random.randint(0, 100000)
-	approx_sqrt = approximate_sqrt(random_int)
-	actual_sqrt = math.sqrt(random_int)
-	print(f"Square root of {random_int}:")
-	print(f"Approx: {approx_sqrt}")
-	print(f"Actual: {actual_sqrt}")
-	print(f"Diff: {approx_sqrt-actual_sqrt}")
+    approx_sqrt = approximate_sqrt(random_int)
+    actual_sqrt = math.sqrt(random_int)
+    print(f"Square root of {random_int}:")
+    print(f"Approx: {approx_sqrt}")
+    print(f"Actual: {actual_sqrt}")
+    print(f"Diff: {approx_sqrt-actual_sqrt}")
 ```
