@@ -1,4 +1,7 @@
+from dotenv import load_dotenv
 from litellm import completion
+
+load_dotenv()
 
 def call_llm(prompt):
     response = completion(
