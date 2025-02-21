@@ -2,8 +2,8 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 
 # Load the local transformer model Qwen2.5-1.5B and its encoder.
-tokenizer = AutoTokenizer.from_pretrained("Qwen2.5-1.5B")
-model = AutoModel.from_pretrained("Qwen2.5-1.5B")
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B")
+model = AutoModel.from_pretrained("Qwen/Qwen2.5-1.5B")
 model.eval()
 
 def embed(text):
