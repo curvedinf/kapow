@@ -17,8 +17,8 @@ def nn_metafunction(
         **kwargs,
 ):
     global nn_model
-    # Check if CUDA is available
-    device = torch.device("cuda")  # Using CUDA as per original logic
+
+    device = torch.device("cuda")
     print(f"Function name: {_kapow_function_name}")
     print(f"Function signature: {_kapow_function_arg_names}")
     print(f"kwargs: {kwargs}")
@@ -52,10 +52,6 @@ def nn_metafunction(
     print(f"NN Output shape: {nn_output.shape}")  # Debug statement
     print(f"NN Output sample values: {nn_output[:10]}")  # Show first 10 values
 
-    # Produce default output based on the function output signature
-    temp_output = tuple(typ() for typ in _kapow_function_output_signature.values())
-    output = temp_output if len(temp_output) > 1 else temp_output[0]
-
     print("pre json.dumps")
     # Encode output_from_nn to JSON and generate embedding
     output_embedding_vector = process_nn_output(nn_output)
@@ -66,6 +62,9 @@ def nn_metafunction(
     # Training step with input_tensor and output_embedding_tensor
     loss = train_step(nn_model, input_tensor, output_embedding_tensor)
     print(f"Loss: {loss.item()}")  # Debug statement
-
     save_model(nn_model, model_file)
+
+    # Temporary output before decoder is added
+    temp_output = tuple(typ() for typ in _kapow_function_output_signature.values())
+    output = temp_output if len(temp_output) > 1 else temp_output[0]
     return output
