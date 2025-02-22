@@ -1,7 +1,9 @@
 from json import loads, dumps
 import torch
 from kapow.decoder import decode
+from kapow.embedding import embed
 from kapow.model import load_or_initialize, save_model
+from kapow.qwen_model import tokenizer
 from kapow.training import train_step
 from kapow.processing import serialize_function_call, get_embedding_from_text, process_nn_output, initialize_signature, get_first_token_embedding
 from kapow.math import distance
@@ -31,17 +33,32 @@ def nn_metafunction(
     )
     print(f"Arg JSON: {arg_json}")
 
-    # Generate embedding from litellm
-    embedding_vector = get_first_token_embedding(
-        f"JSON representation of a function call:\n\n{arg_json}\n\n"
+    system_prompt = "You are a helpful assistant that only outputs raw JSON."
+
+    prompt = (
+        f"The JSON representation of a function call:\n\n{arg_json}\n\n"
         f"What is the correct output of the function call in raw JSON?"
-        f"Do not write any text other than the answer in JSON.\n\n"
         f"Example:\n[5.23]\n\n"
-        f"Your answer:\n"
     )
-    input_size = len(embedding_vector)
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ]
+
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+
+    print(f"Prompt text: {text}")
+
+    # Generate embedding from litellm
+    prompt_embedding_vector = embed(prompt)
+    input_size = len(prompt_embedding_vector)
     print(f"Embedding vector length: {input_size}")
-    print(f"Embedding vector sample: {embedding_vector[:10]}")
+    print(f"Embedding vector sample: {prompt_embedding_vector[:10]}")
 
     # Check for existing NN model or initialize a new one
     model_file = f"{_kapow_function_name}.tnn"
@@ -50,7 +67,7 @@ def nn_metafunction(
     nn_model = nn_models[model_file]
 
     # Convert embedding to tensor and move it to the device
-    input_tensor = torch.tensor(embedding_vector, dtype=torch.float32).to(device)
+    input_tensor = torch.tensor(prompt_embedding_vector, dtype=torch.float32).to(device)
     print(f"Input tensor shape: {input_tensor.shape}")
     print(f"Input tensor sample values: {input_tensor[:10]}")
     nn_output = nn_model(input_tensor)
@@ -91,8 +108,14 @@ def nn_metafunction(
     optimizer_output_json = dumps(optimizer_output)
     print(f"Optimizer output JSON: {optimizer_output_json}")
 
+    target_messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt},
+        {"role": "assistant", "content": optimizer_output_json}
+    ]
+
     # Create an embedding vector of the json and convert it to a tensor.
-    target_embedding_vector = get_first_token_embedding(optimizer_output_json)
+    target_embedding_vector = get_first_token_embedding(target_messages)
     target_embedding_tensor = torch.tensor(target_embedding_vector, dtype=torch.float32).to(device)
     print(f"Target embedding tensor shape: {target_embedding_tensor.shape}")
 
