@@ -83,11 +83,14 @@ import math
 
 from kapow import mf
 
-def optimal_sqrt(input=float):
-    return math.sqrt(input)
+def optimal_sqrt(mf_output, args, kwargs):
+    # mf_output is the output of the metafunction.
+    # It would normally be used as the basis for optimization,
+    # but in this simple example, we use an exact function to model.
+    return math.sqrt(kwargs["input_number"])
 
 @mf(optimal_sqrt)
-def approximate_sqrt(input=float):
+def approximate_sqrt(input_number=float):
     return float
 
 for _ in range(1000):
@@ -99,3 +102,19 @@ for _ in range(1000):
     print(f"Actual: {actual_sqrt}")
     print(f"Diff: {approx_sqrt-actual_sqrt}")
 ```
+
+## Model Architecture
+
+The model architecture is composed of an encoder, regression neural network, and
+a decoder. The encoder encodes the input and encodes it into a json string,
+which is then plotted into a latent space using a transformer model's encoder.
+The transformer model's encoder produces an embedding vector that normalizes
+the function inputs into latent space. The regression neural network then 
+uses the embedding vector as input to regress an output embedding vector that
+predicts the function output's location in latent space. Finally, the decoder 
+uses a transformer model's decoder to predict a series of tokens for a json
+encoded function output. The JSON is then decoded and the output is returned.
+
+The model also self-trains using the optimal output function that is required
+by the metafunction. The training is performed only on the regression neural
+network by running the 

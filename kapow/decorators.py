@@ -26,6 +26,32 @@ def wrap_in_tuple(item):
         return (item,)
     return item
 
+def get_default_args(func):
+    """
+    Generate a default set of positional arguments for func using its signature.
+    For parameters with a default, use that default.
+    For parameters without a default, we attempt a heuristic:
+        - For 'mf_output', use None.
+        - For 'args', use an empty tuple.
+        - For 'kwargs', if possible include a dummy 'input_number': 1.0, else use an empty dict.
+        - Otherwise, use None.
+    """
+    sig = inspect.signature(func)
+    defaults = []
+    for param in sig.parameters.values():
+        if param.default is not param.empty:
+            defaults.append(param.default)
+        else:
+            if param.name == "mf_output":
+                defaults.append(None)
+            elif param.name == "args":
+                defaults.append(())
+            elif param.name == "kwargs":
+                defaults.append({"input_number": 1.0})
+            else:
+                defaults.append(None)
+    return tuple(defaults)
+
 def metafunction(optimizer_function, mf_def=nn_metafunction):
     if not optimizer_function:
         raise ValueError("An optimizer function must be passed to the mf decorator.")
@@ -44,7 +70,8 @@ def metafunction(optimizer_function, mf_def=nn_metafunction):
             for param in inspect.signature(func).parameters.values()
             if param.kind == inspect.Parameter.VAR_KEYWORD
         ]
-        optimizer_signature = wrap_in_tuple(get_deep_type(optimizer_function()))
+        default_optimizer_args = get_default_args(optimizer_function)
+        optimizer_signature = wrap_in_tuple(get_deep_type(optimizer_function(*default_optimizer_args)))
         print(f"Function output types: {function_signature}")
         print(f"Optimizer output types: {optimizer_signature}")
             

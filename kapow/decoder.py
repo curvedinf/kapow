@@ -1,27 +1,32 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-
+device = torch.device("cuda")
 # Load the local transformer model Qwen2.5-1.5B for decoding.
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B")
-model = AutoModelForSeq2SeqLM.from_pretrained("Qwen/Qwen2.5-1.5B")
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2.5-1.5B")
+model.to(device)
 model.eval()
-
-def decode(embedding_vector, max_length=50):
-    # Convert the embedding vector to a tensor and reshape to match expected encoder output dimensions.
-    # Expected shape: (batch_size, seq_len, hidden_size). Here we assume a single token sequence.
-    encoder_hidden_states = torch.tensor(embedding_vector, dtype=torch.float32).unsqueeze(0).unsqueeze(1)
-    # Create an attention mask for the encoder output.
-    encoder_attention_mask = torch.ones(encoder_hidden_states.shape[:2], dtype=torch.long)
-    # Prepare a dummy decoder input using the beginning-of-sequence token.
-    decoder_input_ids = torch.tensor([[tokenizer.bos_token_id]])
-    # Wrap the encoder outputs in an object with a last_hidden_state attribute.
-    encoder_outputs = type("EncoderOutput", (object,), {"last_hidden_state": encoder_hidden_states})
-    # Generate output text using the model's generate method.
+def decode(embedding_vector, max_length=200, verbose=True):
+    # Convert the embedding vector to a tensor and reshape to (batch_size, seq_len, hidden_size).
+    # Here we assume a single-token sequence.
+    inputs_embeds = torch.tensor(embedding_vector, dtype=torch.float32).unsqueeze(0).unsqueeze(1).to(device)
+    if verbose:
+        print("Decoding diagnostics:")
+        print("Input embedding vector length:", len(embedding_vector))
+        print("Inputs_embeds shape:", inputs_embeds.shape)
+    # Run generate with forced BOS token using beam search.
     generated_ids = model.generate(
-        decoder_input_ids=decoder_input_ids,
-        encoder_outputs=encoder_outputs,
-        encoder_attention_mask=encoder_attention_mask,
-        max_length=max_length
+        inputs_embeds=inputs_embeds,
+        max_length=max_length,
+        forced_bos_token_id=tokenizer.bos_token_id,
+        do_sample=False,
+        num_beams=5,
     )
+    if verbose:
+        print("Generated ids tensor shape:", generated_ids.shape)
+        # Print only the first 10 token ids as a sample for diagnostic purposes.
+        print("Generated ids sample:", generated_ids[0][:10])
     text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+    if verbose:
+        print("Decoded text:", text)
     return text
