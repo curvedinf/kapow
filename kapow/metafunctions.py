@@ -1,13 +1,15 @@
 from json import loads, dumps
 import torch
 from kapow.decoder import decode
-from kapow.embedding import embed
+from kapow.embedding import embed, get_first_token_embedding
 from kapow.model import load_or_initialize, save_model
 from kapow.qwen_model import tokenizer
 from kapow.training import train_step
-from kapow.processing import serialize_function_call, get_embedding_from_text, process_nn_output, initialize_signature, get_first_token_embedding
+from kapow.processing import serialize_function_call, process_nn_output, initialize_signature
 from kapow.math import distance
+
 nn_models = {}
+
 def nn_metafunction(
         *args,
         _kapow_function_name,
