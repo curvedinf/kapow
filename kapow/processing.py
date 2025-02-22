@@ -1,6 +1,10 @@
 import json
 import time
+import torch
+
 from kapow.embedding import embed
+from kapow.qwen_model import tokenizer, device, encoder_model
+
 
 def serialize_function_call(function_name, args, kwargs, arg_names):
     arg_json = json.dumps({

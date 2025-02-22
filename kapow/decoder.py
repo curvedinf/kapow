@@ -1,6 +1,5 @@
 import torch
 from kapow.qwen_model import tokenizer, decoder_model, device
-
 def decode(embedding_vector, max_new_tokens=200, verbose=True):
     # Diagnostic: print summary statistics of the embedding vector.
     if verbose:
@@ -33,7 +32,10 @@ def decode(embedding_vector, max_new_tokens=200, verbose=True):
         print("Generated ids tensor shape:", generated_ids.shape)
         print("Generated ids sample (first 10 tokens):", generated_ids[0][:10])
         print("Generated ids as list:", generated_ids[0].tolist())
+    # Decode the generated tokens and ensure it starts with '['
     text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+    if not text.startswith('['):
+        text = '[' + text
     if verbose:
         print("Decoded text:", text)
         tokenized_text = tokenizer.tokenize(text)
